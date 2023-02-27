@@ -50,9 +50,8 @@ public class HospitalSet extends BaseEntity {
     @TableField("contacts_phone")
     private String contactsPhone;
 
-    @ApiModelProperty(value = "状态")
+    @ApiModelProperty(value = "状态(1:可以使用，0:不能使用)")
     @TableField("status")
     private Integer status;
-
 }
 

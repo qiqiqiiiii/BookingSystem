@@ -1,10 +1,10 @@
 package com.njupt.hosp.controller;
 
+import com.njupt.common.result.Result;
 import com.njupt.hosp.model.hosp.HospitalSet;
 import com.njupt.hosp.service.HospitalSetService;
-
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import com.njupt.hosp.vo.hosp.HospitalQueryVo;
+import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,24 +12,50 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/admin/hosp/hospitalSet")
-//@Api(tags = "医院设置表 相关接口")
+@Api(tags = "医院设置管理")
 public class HospitalController {
     @Autowired
     private HospitalSetService hospitalSetService;
 
     //查询医院设置表的所有信息
     @GetMapping("/findAll")
-    //@ApiOperation(value = "查询医院设置表的所有信息",notes = "获取医院设置表中的所有信息")
-    public List<HospitalSet> findAllHospitalSet(){
-        return hospitalSetService.list();
+    @ApiOperation(value = "查询医院设置表的所有信息", notes = "获取医院设置表中的所有信息")
+    public Result findAllHospitalSet() {
+        List<HospitalSet> list = hospitalSetService.list();
+        return Result.ok(list);
     }
 
-    //删除医院设置
+    //逻辑删除医院设置
     @DeleteMapping("/{id}")
-    //@ApiOperation(value = "删除医院设置",notes = "根据医院的Id来删除医院设置表中的信息")
-    public boolean removeHospitalSet(@PathVariable Long id){
-        return hospitalSetService.removeById(id);
+    @ApiOperation(value = "逻辑删除医院设置", notes = "根据医院的Id来删除医院设置表中的信息")
+    @ApiImplicitParam(name = "id", value = "医院id")
+    public Result removeHospitalSet(@PathVariable Long id) {
+        boolean flag = hospitalSetService.removeById(id);
+        return flag ? Result.ok() : Result.fail();
     }
+
+    //条件查询带分页
+    @PostMapping("/findPage/{current}/{limit}")
+    @ApiOperation(value = "带分页的条件查询", notes = "根据Hosname,Hoscode进行分页查询")
+    public Result findPageHospitalSet(@PathVariable Long current,
+                                      @PathVariable Long limit,
+                                      @RequestBody HospitalQueryVo hospitalQueryVo) {
+        return hospitalSetService.findPageHospitalSet(current, limit, hospitalQueryVo);
+    }
+
+    //添加医院设置
+    @PostMapping("/saveHospitalSet")
+    @ApiOperation(value = "添加医院设置", notes = "向医院配置表中添加一条信息")
+    public Result saveHospitalSet(@RequestBody HospitalSet hospitalSet) {
+        boolean flag = hospitalSetService.saveHospitalSet(hospitalSet);
+        return flag ? Result.ok() : Result.fail();
+    }
+
+    //修改医院设置
+
+    //根据Id获取医院设置
+    //修改医院设置
+    //批量删除医院设置
 
 
 }
