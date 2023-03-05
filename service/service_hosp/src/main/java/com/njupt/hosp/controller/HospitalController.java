@@ -13,6 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/admin/hosp/hospitalSet")
 @Api(tags = "医院设置管理")
+@CrossOrigin
 public class HospitalController {
     @Autowired
     private HospitalSetService hospitalSetService;
@@ -28,7 +29,6 @@ public class HospitalController {
     //逻辑删除医院设置
     @DeleteMapping("/{id}")
     @ApiOperation(value = "逻辑删除医院设置", notes = "根据医院的Id来删除医院设置表中的信息")
-    @ApiImplicitParam(name = "id", value = "医院id")
     public Result removeHospitalSet(@PathVariable Long id) {
         boolean flag = hospitalSetService.removeById(id);
         return flag ? Result.ok() : Result.fail();
@@ -37,13 +37,9 @@ public class HospitalController {
     //条件查询带分页
     @PostMapping("/findPage/{current}/{limit}")
     @ApiOperation(value = "带分页的条件查询", notes = "根据Hosname,Hoscode进行分页查询")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "current", value = "当前页码"),
-            @ApiImplicitParam(name = "limit", value = "一页有多少条记录")
-    })
     public Result findPageHospitalSet(@PathVariable Long current,
                                       @PathVariable Long limit,
-                                      @RequestBody HospitalQueryVo hospitalQueryVo) {
+                                      @RequestBody(required = false) HospitalQueryVo hospitalQueryVo) {
         return hospitalSetService.findPageHospitalSet(current, limit, hospitalQueryVo);
     }
 
@@ -59,7 +55,6 @@ public class HospitalController {
     //TODO 新建一个vo类来进行返回值（直接返回HospitalSet不完善）
     @PostMapping("/getHospSet/{id}")
     @ApiOperation(value = "根据Id获取医院设置", notes = "根据id从医院设置表中查询")
-    @ApiImplicitParam(name = "id", value = "医院id")
     public Result getHospSet(@PathVariable Long id) {
         HospitalSet hospitalSet = hospitalSetService.getById(id);
         return Result.ok(hospitalSet);
@@ -74,10 +69,34 @@ public class HospitalController {
     }
 
     //批量删除医院设置
-    @DeleteMapping("batchRemove")
+    @DeleteMapping("/batchRemove")
     @ApiOperation(value = "批量删除医院设置", notes = "根据医院id来进行批量删除")
     public Result batchRemoveHospitalSet(@RequestBody List<Long> ids) {
         boolean flag = hospitalSetService.removeByIds(ids);
         return flag ? Result.ok() : Result.fail();
+    }
+
+    //医院设定锁定和解锁
+    @PutMapping("/lockHospitalSet/{id}/{status}")
+    @ApiOperation(value="锁定/解锁医院设定",notes = "将医院设定为锁定或者解锁状态")
+    public Result lockHospitalSet(@PathVariable Long id,@PathVariable Integer status){
+        //根据id查询医院设置信息
+        HospitalSet hospitalSet = hospitalSetService.getById(id);
+        //设置状态
+        hospitalSet.setStatus(status);
+        //调用方法
+        boolean flag = hospitalSetService.updateById(hospitalSet);
+        return flag? Result.ok():Result.fail();
+    }
+
+    //发送签名密钥
+    @PutMapping("/sendKey/{id}")
+    @ApiOperation(value="发送签名密钥",notes = "通过短信发送签名密钥")
+    public Result sendKey(@PathVariable Long id){
+        HospitalSet hospitalSet = hospitalSetService.getById(id);
+        String signKey = hospitalSet.getSignKey();
+        String hoscode = hospitalSet.getHoscode();
+        //TODO 发送短信
+        return Result.ok();
     }
 }
